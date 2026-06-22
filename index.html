@@ -3,112 +3,481 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BioDex</title>
+<title>BioDex PRO</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#22c55e">
 
 <style>
 body{
   margin:0;
-  font-family:Arial;
-  background:#0d1117;
+  font-family:Arial, sans-serif;
+  background:linear-gradient(135deg,#0f172a,#111827);
   color:white;
 }
-
 header{
-  background:#16a34a;
-  padding:18px;
+  background:#22c55e;
+  padding:15px;
   text-align:center;
-  font-size:30px;
+  font-size:26px;
   font-weight:bold;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
-
 .container{
   padding:15px;
 }
 
+/* Search & Mic Row */
+.search-bar {
+  display:flex; 
+  gap:8px;
+  margin-bottom: 10px;
+}
 input{
   width:100%;
-  padding:10px;
-  margin-top:10px;
-  border-radius:8px;
+  padding:12px;
+  border-radius:10px;
   border:none;
+  font-size:16px;
+  box-sizing: border-box;
+  background: #1f2937;
+  color: white;
+}
+input::placeholder {
+  color: #9ca3af;
+}
+#micBtn{
+  padding:10px 15px;
+  border:none;
+  border-radius:10px;
+  background:#22c55e;
+  font-size:18px;
+  cursor:pointer;
+  transition: 0.2s;
+}
+#micBtn:active {
+  transform: scale(0.9);
 }
 
+/* Auto-Suggestions */
+#suggestions{
+  background:#111827;
+  border-radius:10px;
+  margin-top:-5px;
+  margin-bottom: 15px;
+  overflow:hidden;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+.sug{
+  padding:12px;
+  cursor:pointer;
+  border-bottom:1px solid #1f2937;
+  transition: 0.2s;
+}
+.sug:hover{
+  background:#22c55e;
+  color:black;
+  font-weight: bold;
+}
+
+/* Filters Style */
+.filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  justify-content: center;
+}
+.filters button {
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: none;
+  background: #1f2937;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+.filters button:hover, .filters button.active {
+  background: #22c55e;
+  color: black;
+}
+
+/* Grid Cards (Pokedex Style) */
+#list{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:15px;
+}
 .card{
   background:#1f2937;
-  padding:10px;
-  margin-top:10px;
+  padding:12px;
+  border-radius:15px;
+  cursor:pointer;
+  transition:0.3s;
+  text-align: center;
+  border: 1px solid #374151;
+}
+.card:hover{
+  transform:translateY(-5px);
+  box-shadow: 0 8px 15px rgba(34, 197, 94, 0.2);
+  border-color: #22c55e;
+}
+.card img{
+  width:100%;
+  height: 110px;
+  object-fit: cover;
   border-radius:10px;
+  background: #0f172a;
+}
+.card h3 {
+  margin: 10px 0 5px 0;
+  font-size: 18px;
+}
+.card small {
+  color: #22c55e;
+  font-weight: bold;
+  background: rgba(34, 197, 94, 0.1);
+  padding: 2px 8px;
+  border-radius: 10px;
 }
 
-img{
-  width:100%;
-  max-width:300px;
-  border-radius:10px;
-  margin-top:10px;
+/* Full Detail View (Pokemon Dex Style) */
+#detailPage{
+  background:#1f2937;
+  padding:20px;
+  border-radius: 15px;
+  margin-top: 10px;
+  border: 1px solid #374151;
+}
+.back-btn {
+  background: #374151;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 15px;
+  font-size: 16px;
+  font-weight: bold;
+  transition: 0.2s;
+}
+.back-btn:hover {
+  background: #4b5563;
+}
+#dname {
+  margin-top: 0;
+  font-size: 28px;
+  border-bottom: 2px solid #22c55e;
+  padding-bottom: 5px;
+}
+#dinfo {
+  font-size: 16px;
+  line-height: 1.5;
+  color: #d1d5db;
+}
+ul {
+  list-style: none;
+  background: #111827;
+  padding: 15px;
+  border-radius: 10px;
+  line-height: 2;
+  margin-top: 15px;
+}
+ul li {
+  font-size: 15px;
+  border-bottom: 1px solid #1f2937;
+  padding: 4px 0;
+}
+ul li:last-child {
+  border-bottom: none;
+}
+ul b {
+  color: #22c55e;
 }
 </style>
 </head>
 
 <body>
 
-<header>🐾 BioDex</header>
+<header>🐾 BioDex PRO</header>
 
 <div class="container">
+  
+  <div id="mainView">
+    <div class="search-bar">
+      <input type="text" id="search" placeholder="Search animal (e.g. Lion, સિંહ)...">
+      <button id="micBtn">🎤</button>
+    </div>
+    
+    <div id="suggestions"></div>
 
-<input type="text" id="search" placeholder="Search animal...">
+    <div class="filters">
+      <button class="filter-btn active" onclick="filterCat('All', this)">All</button>
+      <button class="filter-btn" onclick="filterCat('Wild', this)">Wild</button>
+      <button class="filter-btn" onclick="filterCat('Pet', this)">Pet</button>
+    </div>
 
-<input type="file" id="upload" accept="image/*">
+    <div id="list"></div>
+  </div>
 
-<div id="preview"></div>
-
-<div id="list"></div>
+  <div id="detailPage" style="display:none;">
+    <button class="back-btn" onclick="back()">⬅ Back to Dex</button>
+    <h1 id="dname"></h1>
+    <img id="dimg" style="width:100%; max-height: 250px; object-fit: cover; border-radius:12px; margin-bottom: 15px;">
+    <p id="dinfo"></p>
+    <ul>
+      <li><b>🌍 Habitat:</b> <span id="dhabitat"></span></li>
+      <li><b>🍖 Food Group:</b> <span id="dfood"></span></li>
+      <li><b>⏳ Lifespan:</b> <span id="dlife"></span></li>
+    </ul>
+  </div>
 
 </div>
 
 <script>
+// --- PWA Service Worker ---
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js")
+  .then(() => console.log("PWA Ready 🚀"))
+  .catch((err) => console.log("SW offline setup pending"));
+}
 
-const animals = [
-  "Lion 🦁",
-  "Tiger 🐯",
-  "Elephant 🐘",
-  "Dog 🐶",
-  "Cat 🐱",
-  "Cow 🐄"
+// --- Real Database (With accurate info & high quality links) ---
+let animals = [
+  {
+    id: 1,
+    name: "Lion 🦁",
+    category: "Wild",
+    keywords: "lion king jungle wild carnivore strong sinh સિંહ",
+    info: "Lion is the king of jungle. They live in large social groups called prides.",
+    habitat: "Grasslands and Savannas",
+    food: "Meat (Carnivore)",
+    lifespan: "10–14 years",
+    img: "https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=600"
+  },
+  {
+    id: 2,
+    name: "Tiger 🐯",
+    category: "Wild",
+    keywords: "tiger powerful striped wild cat carnivore vagh વાઘ",
+    info: "Tiger is a powerful striped wild cat. They are solitary hunters and excellent swimmers.",
+    habitat: "Dense Forests and Mangroves",
+    food: "Meat (Carnivore)",
+    lifespan: "10–15 years",
+    img: "https://images.unsplash.com/photo-1547721064-da6cfb341d50?w=600"
+  },
+  {
+    id: 3,
+    name: "Elephant 🐘",
+    category: "Wild",
+    keywords: "elephant biggest large giant land animal herbivore trunk hathi હાથી",
+    info: "Largest land animal alive. Known for their high intelligence, long trunk, and tusks.",
+    habitat: "Deep Tropical Forests and Savannas",
+    food: "Plants & Grass (Herbivore)",
+    lifespan: "60–70 years",
+    img: "https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=600"
+  },
+  {
+    id: 4,
+    name: "Giraffe 🦒",
+    category: "Wild",
+    keywords: "giraffe tall longest neck animal herbivore leaves",
+    info: "The tallest living land animal. Their long neck helps them eat leaves from tall trees.",
+    habitat: "Open Woodlands and Savannas",
+    food: "Leaves & Twigs (Herbivore)",
+    lifespan: "20–25 years",
+    img: "https://images.unsplash.com/photo-1547721064-7c8e4f0c3b7c?w=600"
+  },
+  {
+    id: 5,
+    name: "Zebra 🦓",
+    category: "Wild",
+    keywords: "zebra black white striped pattern horse family herbivore",
+    info: "Famous for their unique black and white striped coats. No two zebras have the same pattern.",
+    habitat: "Treeless Grasslands and Woodlands",
+    food: "Grass (Herbivore)",
+    lifespan: "20–25 years",
+    img: "https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?w=600"
+  },
+  {
+    id: 6,
+    name: "Dog 🐶",
+    category: "Pet",
+    keywords: "dog pet loyal friend domestic animal kutro કૂતરો પાળતુ",
+    info: "Highly loyal domestic animal. They are known as man's best friend due to companionship.",
+    habitat: "Homes and Farms",
+    food: "Omnivore (Meat & Veg)",
+    lifespan: "10–15 years",
+    img: "https://images.unsplash.com/photo-1517849845537-4d257902454a?w=600"
+  },
+  {
+    id: 7,
+    name: "Cat 🐱",
+    category: "Pet",
+    keywords: "cat cute small pet domestic night vision biladi બિલાડી",
+    info: "Small, furry domestic pet. They have amazing agility and excellent night vision.",
+    habitat: "Homes and Human environments",
+    food: "Meat (Carnivore)",
+    lifespan: "12–18 years",
+    img: "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=600"
+  }
 ];
 
-// show animals
+// --- Show Pokedex Cards ---
 function show(data){
-  const list = document.getElementById("list");
+  let list = document.getElementById("list");
   list.innerHTML = "";
+  if(data.length === 0) {
+    list.innerHTML = "<p style='text-align:center;color:#9ca3af;grid-column:1/-1;'>No animals found in Dex!</p>";
+    return;
+  }
   data.forEach(a=>{
-    list.innerHTML += `<div class="card">${a}</div>`;
+    list.innerHTML += `
+      <div class="card" onclick="openPage(${a.id})">
+        <img src="${a.img}" alt="${a.name}">
+        <h3>${a.name}</h3>
+        <small>${a.category}</small>
+      </div>
+    `;
   });
 }
 show(animals);
 
-// search
-document.getElementById("search").addEventListener("input", function(){
-  let value = this.value.toLowerCase();
-  let filtered = animals.filter(a => a.toLowerCase().includes(value));
-  show(filtered);
-});
+// --- Category Filters ---
+function filterCat(cat, btnElement){
+  document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+  btnElement.classList.add('active');
 
-// image upload
-document.getElementById("upload").addEventListener("change", function(event){
-  const file = event.target.files[0];
-
-  if(file){
-    const reader = new FileReader();
-
-    reader.onload = function(e){
-      document.getElementById("preview").innerHTML =
-        `<img src="${e.target.result}">`;
-    }
-
-    reader.readAsDataURL(file);
+  if(cat === "All"){
+    show(animals);
+  } else {
+    show(animals.filter(a => a.category === cat));
   }
+}
+
+// --- Smart Gujarati & Keyword Search Match ---
+function smartMatch(text, animal){
+  text = text.toLowerCase().trim();
+  const gujaratiMap = {
+    "સિંહ": "lion",
+    "હાથી": "elephant",
+    "કૂતરો": "dog",
+    "વાઘ": "tiger",
+    "બિલાડી": "cat",
+    "પાળતુ": "pet",
+    "જંગલી": "wild"
+  };
+  for(let key in gujaratiMap){
+    if(text.includes(key)){
+      text = text + " " + gujaratiMap[key];
+    }
+  }
+  
+  let terms = text.split(" ");
+  return terms.some(term => 
+    animal.name.toLowerCase().includes(term) ||
+    animal.category.toLowerCase().includes(term) ||
+    animal.keywords.toLowerCase().includes(term)
+  );
+}
+
+// --- Search Typing & Live Auto-Suggestions ---
+let searchBox = document.getElementById("search");
+let sugBox = document.getElementById("suggestions");
+
+searchBox.addEventListener("input", function(){
+  let query = this.value;
+
+  if(query.trim() === ""){
+    sugBox.innerHTML = "";
+    show(animals);
+    return;
+  }
+
+  let filtered = animals.filter(a => smartMatch(query, a));
+  show(filtered);
+  
+  sugBox.innerHTML = "";
+  filtered.slice(0, 4).forEach(a=>{
+    sugBox.innerHTML += `
+      <div class="sug" onclick="selectSug('${a.id}')">
+        🔍 ${a.name} (${a.category})
+      </div>
+    `;
+  });
 });
 
+function selectSug(id){
+  sugBox.innerHTML = "";
+  openPage(Number(id));
+}
+
+// --- Smart Voice Search (Gujarati + English Fallback) ---
+const micBtn = document.getElementById("micBtn");
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if(SpeechRecognition){
+  const recognition = new SpeechRecognition();
+  recognition.lang = "gu-IN"; 
+
+  micBtn.addEventListener("click", ()=>{
+    recognition.start();
+    micBtn.innerText = "🎙️...";
+    micBtn.style.background = "#ef4444";
+  });
+
+  recognition.onresult = (event)=>{
+    let voiceText = event.results[0][0].transcript;
+    searchBox.value = voiceText;
+    
+    let filtered = animals.filter(a => smartMatch(voiceText, a));
+    show(filtered);
+    sugBox.innerHTML = "";
+    resetMicBtn();
+  };
+
+  recognition.onerror = ()=>{
+    recognition.lang = "en-US";
+    resetMicBtn();
+  };
+
+  recognition.onspeechend = ()=>{
+    recognition.stop();
+    resetMicBtn();
+  };
+  
+  function resetMicBtn(){
+    micBtn.innerText = "🎤";
+    micBtn.style.background = "#22c55e";
+  }
+} else {
+  micBtn.innerText = "❌";
+  micBtn.disabled = true;
+}
+
+// --- Pokedex Detail Page Navigation ---
+function openPage(id){
+  let a = animals.find(x => x.id === id);
+  if(!a) return;
+  
+  document.getElementById("mainView").style.display = "none";
+  document.getElementById("detailPage").style.display = "block";
+  sugBox.innerHTML = ""; 
+
+  document.getElementById("dname").innerText = a.name;
+  document.getElementById("dimg").src = a.img;
+  document.getElementById("dinfo").innerText = a.info;
+  document.getElementById("dhabitat").innerText = a.habitat;
+  document.getElementById("dfood").innerText = a.food;
+  document.getElementById("dlife").innerText = a.lifespan;
+  window.scrollTo(0,0);
+}
+
+function back(){
+  document.getElementById("detailPage").style.display = "none";
+  document.getElementById("mainView").style.display = "block";
+  searchBox.value = "";
+  show(animals);
+}
 </script>
 
 </body>
